@@ -87,7 +87,7 @@ struct StateChart {
         return ancestors_for(name).size() + 1;
     }
 
-    std::string least_common_ancestor(std::string name_first, std::string name_second) const {
+    std::string least_common_ancestor(const std::string& name_first, const std::string& name_second) const {
         auto s1_anc = ancestors_for(name_first);
         auto s2_anc = ancestors_for(name_second);
         for (auto&& state : s1_anc) {

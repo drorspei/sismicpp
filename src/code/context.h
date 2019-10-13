@@ -30,7 +30,7 @@ struct TimeContextProvider : Attachable {
         return std::find(configuration.begin(), configuration.end(), name) != configuration.end();
     }
 
-    void operator()(MetaEvent* event) override {
+    void operator()(std::shared_ptr<const MetaEvent> event) override {
         if (event->name == "step started") {
             time = event->time;
         } else if (event->name == "state entered") {
@@ -46,9 +46,9 @@ struct TimeContextProvider : Attachable {
 };
 
 struct EventContextProvider : Attachable {
-    std::vector<std::unique_ptr<Event>> pending = {};
-    std::vector<Event*> sent = {};
-    Event* consumed = nullptr;
+    std::vector<std::unique_ptr<const Event>> pending = {};
+    std::vector<std::shared_ptr<const Event>> sent = {};
+    std::shared_ptr<const Event> consumed = nullptr;
 
     void send(std::unique_ptr<InternalEvent> event) {
         pending.push_back(std::move(event));
@@ -58,7 +58,7 @@ struct EventContextProvider : Attachable {
         pending.push_back(std::move(event));
     }
 
-    bool sent(const std::string& name) const {
+    bool was_sent(const std::string& name) const {
         return std::any_of(
             sent.begin(), sent.end(), [&name] (auto&& e) {
                 return name == e->name;
@@ -70,7 +70,7 @@ struct EventContextProvider : Attachable {
         return consumed and consumed->name == name;
     }
 
-    void operator()(MetaEvent* event) override {
+    void operator()(std::shared_ptr<const MetaEvent> event) override {
         if (event->name == "event consumed") {
             consumed = event->event;
         } else if (event->name == "event sent") {

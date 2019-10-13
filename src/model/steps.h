@@ -11,11 +11,11 @@
 namespace sismicpp {
 
 struct MicroStep {
-    std::unique_ptr<Event> event = {};
-    std::unique_ptr<Transition> transition = {};
-    std::vector<std::string> entered_events = {};
+    std::shared_ptr<const Event> event = nullptr;
+    const Transition* transition = {};
+    std::vector<std::string> entered_states = {};
     std::vector<std::string> exited_states = {};
-    std::vector<Event> sent_events = {};
+    std::vector<std::shared_ptr<const Event>> sent_events = {};
 };
 
 struct MacroStep {

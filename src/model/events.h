@@ -2,6 +2,7 @@
 #define INCLUDE_SISMICPP_MODEL_EVENTS
 
 #include <string>
+#include <memory>
 
 namespace sismicpp {
 
@@ -29,7 +30,8 @@ struct MetaEvent : Event {
     double time = 0;
     std::string state = "";
     std::string source = "";
-    Event* event = nullptr;
+    std::string target = "";
+    std::shared_ptr<const Event> event = nullptr;
 
     MetaEvent(std::string name, double time) : Event(std::move(name)), time(time) {}
 };
