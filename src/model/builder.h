@@ -60,7 +60,7 @@ struct PartialState {
             } else if (is_compound) {
                 return std::make_unique<CompoundState>(name, std::move(initial));
             }
-            
+
             return std::make_unique<BasicState>(name);
         }();
 
@@ -146,6 +146,7 @@ auto parallel_state = [] (auto&&... args) {
 auto build_statechart = [] (auto&&... args) -> StateChart {
     StateChart ret{""};
     detail::swallow(std::forward<decltype(args)>(args)(ret)...);
+    ret.validate();
     return ret;
 };
 
