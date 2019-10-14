@@ -47,6 +47,8 @@ struct BasicState : State {
     bool is_shallow_history_state() const override { return false;};
     bool is_deep_history_state() const override { return false;};
     bool is_final_state() const override { return false; };
+
+    explicit BasicState(std::string name) : State(std::move(name)) {}
 };
 
 struct CompoundState : State {

@@ -30,12 +30,14 @@ struct Interpreter : Observable {
     std::vector<std::pair<double, std::shared_ptr<const InternalEvent>>> internal_queue = {};
     std::vector<std::pair<double, std::shared_ptr<const Event>>> external_queue = {};
     std::vector<Attachable*> listeners = {};
-    
+
     std::unique_ptr<Evaluator> evaluator;
 
     Interpreter(StateChart statechart, void* context) : 
     statechart(std::move(statechart)),
-    evaluator(std::make_unique<CppEvaluator>(*this, context)) {}
+    evaluator(std::make_unique<CppEvaluator>(*this, context)) {
+        evaluator->execute_statechart(statechart);
+    }
 
     std::vector<std::string> get_configuration() const {
         std::vector<std::string> ret = configuration;

@@ -248,12 +248,12 @@ struct StateChart {
             if (state->is_history_state() and !parent_state.is_compound_state()) {
                 throw statechart_error("State '" + parent_state.name + "' cannot be used as a parent for '" + state->name + "'");
             }
-
-            this->parent[state->name] = parent;
-            children[state->name] = {};
-            children[parent].push_back(state->name);
-            states[state->name] = std::move(state);
         }
+
+        this->parent[state->name] = parent;
+        children[state->name] = {};
+        children[parent].push_back(state->name);
+        states[state->name] = std::move(state);
     }
 
     void validate_compoundstate_initial() const {
