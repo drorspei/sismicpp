@@ -26,7 +26,7 @@ TEST_CASE( "Enter initial states", "[sismicpp]" ) {
                 statechart.add_state(BasicState("011"), "01");
         statechart.add_state(BasicState("00"), "root");  // not this one
 
-    Interpreter interp{std::move(statechart), nullptr};
+    Interpreter interp{std::move(statechart)};
     interp.execute();
 
     auto active = active_func(interp);
@@ -55,7 +55,7 @@ TEST_CASE( "Simple transition", "[sismicpp]" ) {
             .target="1"
         });
 
-    Interpreter interp{std::move(statechart), nullptr};
+    Interpreter interp{std::move(statechart)};
     interp.execute();
     interp.queue("go!").execute();
 
@@ -135,4 +135,66 @@ TEST_CASE( "Update context in on exit, action, and on entry", "[sismicpp]" ) {
     REQUIRE( context[1] == 1 );
     REQUIRE( context[2] == 2 );
     REQUIRE( context[3] == 3 );
+}
+
+TEST_CASE( "Simple send", "[sismicpp]" ) {
+    using namespace sismicpp;
+
+    StateChart statechart{"MyStateChart"};
+    statechart.add_state(CompoundState("root", "0"), "");
+        statechart.add_state(BasicState("0"), "root");
+        statechart.add_state(BasicState("1"), "root");
+        statechart.add_transition({
+            .source="0",
+            .event="not yet...",
+            .action=[] (auto context, ActionContext& action_context) { action_context.send("go!"); }
+        });
+        statechart.add_transition({
+            .source="0",
+            .event="go!",
+            .target="1"
+        });
+
+    Interpreter interp{std::move(statechart)};
+    interp.execute();
+    interp.queue("not yet...").execute();
+
+    auto active = active_func(interp);
+
+    REQUIRE( active("root") );
+    REQUIRE( active("1") );
+    REQUIRE( !active("0") );
+}
+
+TEST_CASE( "Simple after", "[sismicpp]" ) {
+    using namespace sismicpp;
+
+    StateChart statechart{"MyStateChart"};
+    statechart.add_state(CompoundState("root", "0"), "");
+        statechart.add_state(BasicState("0"), "root");
+        statechart.add_state(BasicState("1"), "root");
+        statechart.add_transition({
+            .source="0",
+            .event="check after",
+            .guard=[] (auto conext, GuardContext& guard_context) { return guard_context.after(1); },
+            .target="1"
+        });
+
+    Interpreter interp{std::move(statechart)};
+    auto& clock = (SimulatedClock&)(*interp.clock);
+
+    interp.queue("check after").execute();
+
+    auto active = active_func(interp);
+
+    REQUIRE( active("root") );
+    REQUIRE( active("0") );
+    REQUIRE( !active("1") );
+
+    clock.update_time(1);
+    interp.queue("check after").execute();
+
+    REQUIRE( active("root") );
+    REQUIRE( !active("0") );
+    REQUIRE( active("1") );
 }

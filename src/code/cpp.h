@@ -77,12 +77,12 @@ struct CppEvaluator : Evaluator {
                 return time_provider.time;
             }
 
-            void send(std::unique_ptr<InternalEvent> event) override {
-                ret.push_back(std::move(event));
+            void send(Event event) override {
+                ret.push_back(std::make_shared<InternalEvent>(std::move(event)));
             }
 
-            void notify(std::unique_ptr<MetaEvent> event) override {
-                ret.push_back(std::move(event));
+            void notify(Event event) override {
+                ret.emplace_back(std::make_shared<MetaEvent>(std::move(event)));
             }
 
             std::shared_ptr<const Event> get_event() const override {
@@ -118,12 +118,12 @@ struct CppEvaluator : Evaluator {
                 return time_provider.time;
             }
 
-            void send(std::unique_ptr<InternalEvent> event) override {
-                ret.push_back(std::move(event));
+            void send(Event event) override {
+                ret.emplace_back(std::make_shared<InternalEvent>(std::move(event)));
             }
 
-            void notify(std::unique_ptr<MetaEvent> event) override {
-                ret.push_back(std::move(event));
+            void notify(Event event) override {
+                ret.emplace_back(std::make_shared<MetaEvent>(std::move(event)));
             }
 
             MyOnEntryExitContext(const TimeContextProvider& time_provider,

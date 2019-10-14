@@ -12,8 +12,8 @@ using preamble_func = void (*)(void*);
 struct OnEntryExitContext {
     virtual bool active(const std::string& name) const = 0;
     virtual double get_time() const = 0;
-    virtual void send(std::unique_ptr<InternalEvent> event) = 0;
-    virtual void notify(std::unique_ptr<MetaEvent> event) = 0;
+    virtual void send(Event event) = 0;
+    virtual void notify(Event event) = 0;
     virtual ~OnEntryExitContext() {}
 };
 
@@ -33,8 +33,8 @@ using guard_func = bool (*)(const void*, GuardContext&);
 struct ActionContext {
     virtual bool active(const std::string& name) const = 0;
     virtual double get_time() const = 0;
-    virtual void send(std::unique_ptr<InternalEvent> event) = 0;
-    virtual void notify(std::unique_ptr<MetaEvent> event) = 0;
+    virtual void send(Event event) = 0;
+    virtual void notify(Event event) = 0;
     virtual std::shared_ptr<const Event> get_event() const = 0;
     virtual ~ActionContext() {}
 };

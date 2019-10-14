@@ -11,7 +11,8 @@ struct Event {
     double delay = 0;
     void* data = nullptr;
 
-    explicit Event(std::string name_) : name(std::move(name_)) {}
+    Event(std::string name) : name(std::move(name)) {}
+    Event(const char* name) : name(name) {}
 
     virtual bool is_internal_event() const {
         return false;
@@ -24,6 +25,8 @@ struct InternalEvent : Event {
     bool is_internal_event() const override {
         return true;
     }
+
+    explicit InternalEvent(Event&& event) : Event(std::move(event)) {}
 };
 
 struct MetaEvent : Event {
@@ -34,6 +37,7 @@ struct MetaEvent : Event {
     std::shared_ptr<const Event> event = nullptr;
 
     MetaEvent(std::string name, double time) : Event(std::move(name)), time(time) {}
+    explicit MetaEvent(Event&& event) : Event(std::move(event)) {}
 };
 
 }  // namespace sismicpp

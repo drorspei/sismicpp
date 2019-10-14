@@ -25,7 +25,6 @@ private:
     const StateChart statechart;
 
     bool initialized = false;
-    std::unique_ptr<Clock> clock = std::make_unique<SimulatedClock>();
     std::map<std::string, std::vector<std::string>> memory = {};
     std::vector<std::string> configuration = {};
     std::vector<std::pair<double, std::shared_ptr<const InternalEvent>>> internal_queue = {};
@@ -35,6 +34,8 @@ private:
     std::unique_ptr<Evaluator> evaluator;
 
 public:
+    std::unique_ptr<Clock> clock = std::make_unique<SimulatedClock>();
+    
     Interpreter(StateChart statechart, void* context) : 
     statechart(std::move(statechart)),
     evaluator(std::make_unique<CppEvaluator>(*this, context)) {
