@@ -1,7 +1,7 @@
 # Sismic++
 ## A C++ library for running statecharts
 
-This library is a C++ translation of the python package [Sismic (https://sismic.readthedocs.io/)](https://sismic.readthedocs.io/) by Alexandre Decan and contributors [1].
+This library is a C++ (14 and above) translation of the python package [Sismic (https://sismic.readthedocs.io/)](https://sismic.readthedocs.io/) by Alexandre Decan and contributors [1].
 
 Sismic (and thus also Sismic++) is an implementation of the **statechart** abstraction and of an interpreter for it. It mostly conforms to the SCXML standard. See here for more on statecharts https://statecharts.github.io/ .
 
@@ -53,6 +53,12 @@ interpreter.queue("toggle").execute();
 
 
     I need to add examples of all the constructs and DSL. Basically, the `sismicpp::builder` provides a DSL that resembles the YAML way of defining statcharts in sismic.
+
+# Additional notes
+
+* The library supports C++ 14 or higher.
+
+* There are some tests already written with the library Catch2. The license is included in the file `LICENSE_catch.txt`.
 
 
 [1] @software{sismic,
