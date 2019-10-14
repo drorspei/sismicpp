@@ -8,29 +8,33 @@ Sismic (and thus also Sismic++) is an implementation of the **statechart** abstr
 # A simple example
 
 ```c++
+using namespace sismicpp;
+
 StateChart statechart = [] {
     using namespace sismicpp::builder;
-    return statechart(
-        name("Button"),
-        initial("Off"),
+    return build_statechart(
+        name("My Button StateChart"),
+        description("A showcase of statecharts and buttons"),
         state(
-            name("Off"),
-            transition(
-                event("toggle"),
-                target("On")
-            )
-        ),
-        state(
-            name("On"),
-            transition(
-                event("toggle"),
-                target("Off")
+            name("Button"),
+            initial("Off"),
+            state(
+                name("Off"),
+                transition(
+                    event("toggle"),
+                    target("On")
+                )
+            ),
+            state(
+                name("On"),
+                transition(
+                    event("toggle"),
+                    target("Off")
+                )
             )
         )
     );
 }();
-
-using namespace sismicpp;
 
 Interpreter interpreter{std::move(statechart)};
 interpreter.queue("toggle").execute();
@@ -46,6 +50,7 @@ interpreter.queue("toggle").execute();
 * Tests?
 
 * Documentation...
+
 
     I need to add examples of all the constructs and DSL. Basically, the `sismicpp::builder` provides a DSL that resembles the YAML way of defining statcharts in sismic.
 

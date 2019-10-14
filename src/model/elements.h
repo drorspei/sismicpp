@@ -54,7 +54,9 @@ struct BasicState : State {
     bool is_deep_history_state() const override { return false;};
     bool is_final_state() const override { return false; };
 
-    explicit BasicState(std::string name) : State(std::move(name)) {}
+    explicit BasicState(std::string name) :
+    State(std::move(name)) {}
+
     BasicState(std::string name, on_entryexit_func on_entry, on_entryexit_func on_exit) :
     State(std::move(name), on_entry,  on_exit) {}
 };
@@ -70,7 +72,10 @@ struct CompoundState : State {
 
     std::string initial;
 
-    CompoundState(std::string name, std::string initial) : State(std::move(name)), initial(std::move(initial)) {}
+    CompoundState(std::string name, std::string initial) :
+    State(std::move(name)),
+    initial(std::move(initial)) {}
+
     CompoundState(std::string name, std::string initial, on_entryexit_func on_entry, on_entryexit_func on_exit) :
     State(std::move(name), on_entry, on_exit),
     initial(std::move(initial)) {}
@@ -85,7 +90,9 @@ struct OrthogonalState : State {
     bool is_deep_history_state() const override { return false;};
     bool is_final_state() const override { return false; };
 
-    explicit OrthogonalState(std::string name) : State(std::move(name)) {}
+    explicit OrthogonalState(std::string name) :
+    State(std::move(name)) {}
+
     OrthogonalState(std::string name, on_entryexit_func on_entry, on_entryexit_func on_exit) :
     State(std::move(name), on_entry,  on_exit) {}
 };
@@ -99,17 +106,27 @@ struct HistoryState : State {
     bool is_deep_history_state() const override = 0;
     bool is_final_state() const override { return false; };  
 
-    std::string memory = "";  
+    std::string memory = "";
+
+    explicit HistoryState(std::string name, std::string memory) :
+    State(std::move(name)),
+    memory(std::move(memory)) {}
 };
 
 struct ShallowHistoryState : HistoryState {
     bool is_shallow_history_state() const override { return true;};
     bool is_deep_history_state() const override { return false;};
+
+    explicit ShallowHistoryState(std::string name, std::string memory) :
+    HistoryState(std::move(name), std::move(memory)) {}
 };
 
 struct DeepHistoryState : HistoryState {
     bool is_shallow_history_state() const override { return false;};
     bool is_deep_history_state() const override { return true;};
+    
+    explicit DeepHistoryState(std::string name, std::string memory) :
+    HistoryState(std::move(name), std::move(memory)) {}
 };
 
 struct FinalState : State {
@@ -120,6 +137,9 @@ struct FinalState : State {
     bool is_shallow_history_state() const override { return false;};
     bool is_deep_history_state() const override { return false;};
     bool is_final_state() const override { return true; };
+
+    explicit FinalState(std::string name) :
+    State(std::move(name)) {}
 };
 
 struct Transition {
