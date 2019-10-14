@@ -33,12 +33,6 @@ struct PartialState {
     std::vector<Transition> transitions = {};
     std::vector<PartialState> inner_states = {};
 
-    StateChart& operator()(StateChart& statechart) {
-        add_all_states(statechart);
-        add_all_transitions(statechart);
-        return statechart;
-    }
-
     void add_all_states(StateChart& statechart) {
         auto state = [&] () -> std::unique_ptr<State> {
             if (type != "") {
@@ -92,6 +86,14 @@ struct PartialState {
         return parent_state;
     }
 };
+
+struct PartialRootState : PartialState {
+    StateChart& operator()(StateChart& statechart) {
+        add_all_states(statechart);
+        add_all_transitions(statechart);
+        return statechart;
+    }
+};
 }  // namespace detail
 
 ATTRIBUTE_SETTER_AUTO(name);
@@ -141,6 +143,12 @@ auto parallel_state = [] (auto&&... args) {
     partial_state.is_orthogonal = true;
     detail::swallow(std::forward<decltype(args)>(args)(partial_state)...);
     return partial_state;
+};
+
+auto root_state = [] (auto&&... args) {
+    detail::PartialRootState partial_root_state;
+    detail::swallow(std::forward<decltype(args)>(args)(partial_root_state)...);
+    return partial_root_state;
 };
 
 auto build_statechart = [] (auto&&... args) -> StateChart {

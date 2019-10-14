@@ -14,7 +14,7 @@ TEST_CASE( "Enter initial states", "[sismicpp]" ) {
         return build_statechart(
             name("My Button StateChart"),
             description("A showcase of statecharts and buttons"),
-            state(
+            root_state(
                 name("Button"),
                 initial("Off"),
                 state(
