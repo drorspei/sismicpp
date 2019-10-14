@@ -1,3 +1,6 @@
+#ifndef INCLUDE_SISMICPP_MODEL_STATECHART
+#define INCLUDE_SISMICPP_MODEL_STATECHART
+
 #include "model/elements.h"
 #include "exceptions.h"
 
@@ -7,19 +10,25 @@
 #include <memory>
 #include <algorithm>
 
-#ifndef INCLUDE_SISMICPP_MODEL_STATECHART
-#define INCLUDE_SISMICPP_MODEL_STATECHART
-
 namespace sismicpp {
 
 struct StateChart {
     std::string name;
     std::string description = "";
-    exec_func preamble = nullptr;
+    preamble_func preamble = nullptr;
     std::map<std::string, std::unique_ptr<State>> states = {};
     std::map<std::string, std::string> parent = {};
     std::map<std::string, std::vector<std::string>> children = {{"", {}}};
     std::vector<Transition> transitions = {};
+
+    explicit StateChart(std::string name) :
+    name(std::move(name)),
+    description{""},
+    preamble{nullptr},
+    states{},
+    parent{},
+    children{{"", {}}},
+    transitions{} {}
 
     std::string get_root() const {
         for (const auto& pair : parent) {
@@ -252,8 +261,21 @@ struct StateChart {
 
         this->parent[state->name] = parent;
         children[state->name] = {};
+
+        if (children.find(parent) == children.end()) {
+            children[parent] = {};
+        }
         children[parent].push_back(state->name);
+        // children.emplace(parent, std::vector<std::string>{}).first->second.push_back(state->name);
+        // children[parent].push_back(state->name);
+
         states[state->name] = std::move(state);
+    }
+
+    template <typename TState>
+    typename std::enable_if<std::is_base_of<State, TState>::value>::type
+    add_state(TState state, std::string parent) {
+        add_state(std::make_unique<TState>(std::move(state)), std::move(parent));
     }
 
     void validate_compoundstate_initial() const {

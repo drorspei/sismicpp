@@ -22,7 +22,7 @@ struct TimeContextProvider : Attachable {
         return time - seconds >= entry_time.at(name);
     }
 
-    bool idle(const std::string& name, double seconds) {
+    bool idle(const std::string& name, double seconds) const {
         return time - seconds >= idle_time.at(name);
     }
 
@@ -34,7 +34,7 @@ struct TimeContextProvider : Attachable {
         if (event->name == "step started") {
             time = event->time;
         } else if (event->name == "state entered") {
-            configuration.push_back(event->name);
+            configuration.push_back(event->state);
             entry_time[event->state] = time;
             idle_time[event->state] = time;
         } else if (event->name == "state exited") {

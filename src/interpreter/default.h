@@ -21,6 +21,7 @@
 namespace sismicpp {
 
 struct Interpreter : Observable {
+private:
     const StateChart statechart;
 
     bool initialized = false;
@@ -33,24 +34,17 @@ struct Interpreter : Observable {
 
     std::unique_ptr<Evaluator> evaluator;
 
+public:
     Interpreter(StateChart statechart, void* context) : 
     statechart(std::move(statechart)),
     evaluator(std::make_unique<CppEvaluator>(*this, context)) {
         evaluator->execute_statechart(statechart);
     }
 
+    explicit Interpreter(StateChart statechart) : Interpreter(std::move(statechart), nullptr) {}
+
     std::vector<std::string> get_configuration() const {
-        std::vector<std::string> ret = configuration;
-        std::sort(ret.begin(), ret.end(), [&] (auto& s1, auto& s2) -> bool {
-            auto d1 = statechart.depth_for(s1);
-            auto d2 = statechart.depth_for(s2);
-            if (d1 != d2) {
-                return d1 < d2;
-            } else {
-                return s1 < s2;
-            }
-        });
-        return ret;
+        return configuration;
     }
 
     bool is_in_final() const {
@@ -102,6 +96,7 @@ struct Interpreter : Observable {
         return *this;
     }
 
+private:
     void raise_event(std::shared_ptr<const MetaEvent> event) {
         for (auto&& listener : listeners) {
             listener->operator()(event);
@@ -126,7 +121,7 @@ struct Interpreter : Observable {
     auto select_event_and_consume() {
         auto select_from_queue = [&] (auto& queue) -> std::shared_ptr<const Event> {
             if (!queue.empty()) {
-                if (queue.front().first < clock->get_time()) {
+                if (queue.front().first <= clock->get_time()) {
                     auto time_event = std::move(queue.front());
                     queue.erase(queue.begin());
                     return std::move(time_event.second);
@@ -146,7 +141,7 @@ struct Interpreter : Observable {
     auto select_event() const {
         auto select_from_queue = [&] (auto& queue) -> std::shared_ptr<const Event> {
             if (!queue.empty()) {
-                if (queue.front().first < clock->get_time()) {
+                if (queue.front().first <= clock->get_time()) {
                     return queue.front().second;
                 }
             }
@@ -402,8 +397,10 @@ struct Interpreter : Observable {
 
         for (auto&& state_name : step.exited_states) {
             auto& state = statechart.state_for(state_name);
-            for (auto&& sent_event : evaluator->execute_on_exit(state)) {
-                sent_events.push_back(std::move(sent_event));
+            if (state.on_exit) {
+                for (auto&& sent_event : evaluator->execute_on_exit(state)) {
+                    sent_events.push_back(std::move(sent_event));
+                }
             }
 
             if (state.is_compound_state()) {
@@ -436,8 +433,10 @@ struct Interpreter : Observable {
         }
 
         if (step.transition) {
-            for (auto&& sent_event : evaluator->execute_action(*step.transition, step.event.get())) {
-                sent_events.push_back(std::move(sent_event));
+            if (step.transition->action) {
+                for (auto&& sent_event : evaluator->execute_action(*step.transition, step.event)) {
+                    sent_events.push_back(std::move(sent_event));
+                }
             }
 
             auto transition_processed = MetaEvent("transition_processed", clock->get_time());
@@ -449,8 +448,10 @@ struct Interpreter : Observable {
 
         for (auto&& state_name : step.entered_states) {
             auto& state = statechart.state_for(state_name);
-            for (auto&& sent_event : evaluator->execute_on_entry(state)) {
-                sent_events.push_back(std::move(sent_event));
+            if (state.on_entry) {
+                for (auto&& sent_event : evaluator->execute_on_entry(state)) {
+                    sent_events.push_back(std::move(sent_event));
+                }
             }
 
             configuration.push_back(state_name);
@@ -478,6 +479,7 @@ struct Interpreter : Observable {
         return steps;
     }
 
+public:
     std::unique_ptr<MacroStep> execute_once() {
         std::unique_ptr<MacroStep> macro_step;
         raise_event(std::make_shared<const MetaEvent>(MetaEvent("step started", clock->get_time())));

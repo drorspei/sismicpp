@@ -17,8 +17,14 @@ struct Contract {
 
 struct State {
     std::string name;
+    on_entryexit_func on_entry = nullptr;
+    on_entryexit_func on_exit = nullptr;
 
     explicit State(std::string name) : name(std::move(name)) {}
+    explicit State(std::string name, on_entryexit_func on_entry, on_entryexit_func on_exit) :
+    name(std::move(name)),
+    on_entry{on_entry},
+    on_exit{on_exit} {}
 
     virtual bool is_actions_state() const = 0;
     virtual bool is_transitions_state() const = 0;
@@ -49,6 +55,8 @@ struct BasicState : State {
     bool is_final_state() const override { return false; };
 
     explicit BasicState(std::string name) : State(std::move(name)) {}
+    BasicState(std::string name, on_entryexit_func on_entry, on_entryexit_func on_exit) :
+    State(std::move(name), on_entry,  on_exit) {}
 };
 
 struct CompoundState : State {
@@ -63,6 +71,9 @@ struct CompoundState : State {
     std::string initial;
 
     CompoundState(std::string name, std::string initial) : State(std::move(name)), initial(std::move(initial)) {}
+    CompoundState(std::string name, std::string initial, on_entryexit_func on_entry, on_entryexit_func on_exit) :
+    State(std::move(name), on_entry, on_exit),
+    initial(std::move(initial)) {}
 };
 
 struct OrthogonalState : State {
@@ -73,6 +84,10 @@ struct OrthogonalState : State {
     bool is_shallow_history_state() const override { return false;};
     bool is_deep_history_state() const override { return false;};
     bool is_final_state() const override { return false; };
+
+    explicit OrthogonalState(std::string name) : State(std::move(name)) {}
+    OrthogonalState(std::string name, on_entryexit_func on_entry, on_entryexit_func on_exit) :
+    State(std::move(name), on_entry,  on_exit) {}
 };
 
 struct HistoryState : State {
@@ -111,8 +126,8 @@ struct Transition {
     std::string source;
     std::string target = "";
     std::string event = "";
-    eval_func guard = nullptr;
-    exec_func action = nullptr;
+    guard_func guard = nullptr;
+    action_func action = nullptr;
     int32_t priority = 0;
 
     bool is_internal() const {
